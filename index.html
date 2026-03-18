@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AI Investing">
+<meta name="theme-color" content="#1F3864">
+<title>Biren Shah AI Investing System</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --navy: #1F3864; --blue: #2E4F7A; --gold: #C9A84C; --lgold: #F0D080;
+    --white: #FFFFFF; --offwh: #F5F7FA; --gray: #8899AA; --dgray: #334455;
+    --green: #1D6A3A; --red: #6B1A1A; --brown: #7B4F00; --purple: #4A1A6B;
+  }
+  html, body { height: 100%; font-family: -apple-system, 'Segoe UI', Calibri, Arial, sans-serif;
+    background: var(--offwh); color: var(--dgray); font-size: 15px; }
+
+  /* ── Header ── */
+  header { background: var(--navy); border-bottom: 4px solid var(--gold); position: sticky; top: 0; z-index: 100; }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; gap: 10px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-bar { width: 5px; height: 36px; background: var(--gold); border-radius: 3px; flex-shrink: 0; }
+  .logo-text h1 { font-size: 13px; color: var(--white); font-weight: 700; letter-spacing: 0.5px; line-height: 1.3; }
+  .logo-text p { font-size: 10px; color: var(--gold); margin-top: 2px; }
+  .compat { font-size: 10px; color: #7799BB; text-align: right; line-height: 1.5; flex-shrink: 0; }
+
+  /* ── Mobile tab bar ── */
+  .tab-bar { display: none; background: var(--navy); border-bottom: 1px solid #2A4070;
+    position: sticky; top: 60px; z-index: 99; }
+  .tab-bar button { flex: 1; padding: 10px 4px; background: none; border: none; color: #7799BB;
+    font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.15s; border-bottom: 3px solid transparent; }
+  .tab-bar button.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* ── Layout ── */
+  .app-layout { display: grid; grid-template-columns: 270px 1fr; height: calc(100vh - 60px); }
+
+  /* ── Sidebar ── */
+  .sidebar { background: var(--white); border-right: 1px solid #DDE4EE;
+    overflow-y: auto; padding: 12px 10px; display: flex; flex-direction: column; gap: 6px; }
+  .cat-label { font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--gray); padding: 10px 4px 3px; }
+  .cat-label:first-child { padding-top: 4px; }
+  .prompt-btn { background: var(--offwh); border: 1px solid #DDE4EE; border-radius: 8px;
+    padding: 9px 12px; cursor: pointer; text-align: left; transition: all 0.15s;
+    display: flex; align-items: center; gap: 9px; width: 100%; }
+  .prompt-btn:hover, .prompt-btn:active { border-color: var(--gold); background: #FFFBF0; }
+  .prompt-btn.active { border-color: var(--gold); background: var(--navy); }
+  .prompt-btn.active .btn-title { color: var(--lgold); }
+  .prompt-btn.active .btn-sub { color: #7799BB; }
+  .btn-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .btn-title { font-size: 12px; font-weight: 600; color: var(--navy); }
+  .btn-sub { font-size: 10px; color: var(--gray); margin-top: 1px; }
+
+  /* ── Main panel ── */
+  .main { overflow-y: auto; display: flex; flex-direction: column; gap: 0; }
+  .main-inner { padding: 16px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+
+  /* ── Welcome ── */
+  .welcome { background: var(--white); border-radius: 12px; padding: 28px 20px;
+    border: 1px solid #DDE4EE; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .welcome h2 { font-size: 20px; color: var(--navy); margin-bottom: 8px; font-weight: 700; }
+  .welcome p { color: var(--gray); font-size: 13px; line-height: 1.6; margin: 0 auto 20px; max-width: 400px; }
+  .welcome-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 400px; margin: 0 auto; }
+  .welcome-stat { background: var(--navy); border-radius: 10px; padding: 14px 8px; }
+  .welcome-stat .num { font-size: 26px; font-weight: 700; color: var(--gold); }
+  .welcome-stat .lbl { font-size: 10px; color: #7799BB; margin-top: 2px; }
+
+  /* ── Prompt card ── */
+  .prompt-card { background: var(--white); border-radius: 12px; overflow: hidden;
+    border: 1px solid #DDE4EE; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .card-header { padding: 14px 16px; display: flex; align-items: flex-start;
+    justify-content: space-between; border-bottom: 1px solid #EEF2F8; gap: 10px; }
+  .card-title { font-size: 16px; font-weight: 700; color: var(--navy); }
+  .card-sub { font-size: 11px; color: var(--gray); margin-top: 3px; }
+  .freq-badge { font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 20px;
+    white-space: nowrap; flex-shrink: 0; }
+
+  /* ── Inputs ── */
+  .inputs-section { padding: 14px 16px; border-bottom: 1px solid #EEF2F8; }
+  .inputs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .input-group label { display: block; font-size: 10px; font-weight: 700; color: var(--gray);
+    margin-bottom: 4px; letter-spacing: 0.5px; text-transform: uppercase; }
+  .input-group input { width: 100%; padding: 9px 11px; border: 1px solid #DDE4EE; border-radius: 8px;
+    font-size: 14px; color: var(--dgray); background: var(--offwh); -webkit-appearance: none;
+    transition: border-color 0.15s; }
+  .input-group input:focus { outline: none; border-color: var(--gold); background: var(--white); }
+  .input-hint { font-size: 10px; color: var(--gray); margin-top: 3px; }
+
+  /* ── Output ── */
+  .prompt-output-section { padding: 14px 16px; }
+  .output-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 10px; }
+  .output-label { font-size: 10px; font-weight: 700; color: var(--gray); letter-spacing: 1px; text-transform: uppercase; }
+  .copy-btn { background: var(--gold); color: var(--navy); border: none; padding: 10px 18px;
+    border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; flex-shrink: 0;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px; -webkit-appearance: none; }
+  .copy-btn:active { transform: scale(0.97); }
+  .copy-btn.copied { background: var(--green); color: var(--white); }
+
+  .prompt-box { background: #0F1E30; border-radius: 10px; padding: 14px 16px;
+    font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.75;
+    color: #C8D8E8; white-space: pre-wrap; overflow-x: auto; overflow-y: auto;
+    max-height: 380px; border: 1px solid #1E3050; word-break: break-word; }
+  .prompt-box .run-cmd { color: #F0D080; font-weight: bold; font-size: 13px; }
+  .prompt-box .step { color: #88AAFF; font-weight: bold; }
+  .prompt-box .rule { color: #FF9966; }
+
+  /* ── Tips ── */
+  .tips-card { background: var(--navy); border-radius: 12px; padding: 14px 16px; border: 1px solid #2A4070; }
+  .tips-title { font-size: 11px; font-weight: 700; color: var(--gold); letter-spacing: 1px;
+    margin-bottom: 10px; text-transform: uppercase; }
+  .tip { display: flex; gap: 10px; margin-bottom: 8px; font-size: 12px; color: #8AAABB; line-height: 1.5; }
+  .tip-icon { flex-shrink: 0; }
+
+  /* ── Scrollbar ── */
+  .prompt-box::-webkit-scrollbar { width: 5px; height: 5px; }
+  .prompt-box::-webkit-scrollbar-track { background: #0F1E30; }
+  .prompt-box::-webkit-scrollbar-thumb { background: #2A4070; border-radius: 3px; }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-thumb { background: #DDE4EE; border-radius: 2px; }
+
+  /* ── MOBILE (<= 768px) ── */
+  @media (max-width: 768px) {
+    header { position: sticky; top: 0; }
+    .header-inner { padding: 10px 14px; }
+    .logo-text h1 { font-size: 12px; }
+    .compat { display: none; }
+
+    .tab-bar { display: flex; top: 56px; }
+
+    .app-layout { grid-template-columns: 1fr; height: auto; }
+
+    .sidebar { display: none; border: none; padding: 10px 12px; }
+    .sidebar.mobile-active { display: flex; position: fixed; top: 56px; left: 0; right: 0;
+      bottom: 0; z-index: 98; overflow-y: auto; padding-bottom: 80px; }
+
+    .main { min-height: calc(100vh - 100px); }
+    .main-inner { padding: 12px; }
+
+    .prompt-box { font-size: 11.5px; max-height: 320px; }
+    .card-title { font-size: 15px; }
+    .inputs-grid { grid-template-columns: 1fr; }
+    .input-group input { font-size: 16px; } /* prevents iOS zoom */
+
+    .copy-btn { padding: 12px 20px; font-size: 14px; width: 100%; justify-content: center; }
+    .output-header { flex-direction: column; align-items: stretch; }
+    .output-label { margin-bottom: 6px; }
+
+    .welcome { padding: 24px 16px; }
+    .welcome h2 { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="lock-screen" style="
+  position:fixed; inset:0; z-index:9999;
+  background:linear-gradient(135deg, #1F3864 0%, #0D1F3C 100%);
+  display:flex; align-items:center; justify-content:center;
+  font-family:-apple-system,'Segoe UI',Arial,sans-serif;
+">
+  <div style="
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(201,168,76,0.4);
+    border-radius:20px; padding:40px 36px;
+    width:min(360px, 90vw); text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  ">
+    <!-- Logo bar -->
+    <div style="display:flex;justify-content:center;margin-bottom:24px;">
+      <div style="width:5px;height:44px;background:#C9A84C;border-radius:3px;margin-right:14px;"></div>
+      <div style="text-align:left;">
+        <div style="font-size:13px;font-weight:700;color:#FFFFFF;letter-spacing:1px;line-height:1.3;">
+          THE BIREN SHAH<br>AI INVESTING SYSTEM
+        </div>
+        <div style="font-size:10px;color:#C9A84C;margin-top:3px;">Prompt Generator</div>
+      </div>
+    </div>
+
+    <div style="font-size:32px;margin-bottom:8px;">🔒</div>
+    <div style="font-size:15px;color:#AABCCC;margin-bottom:24px;line-height:1.5;">
+      Enter your access password<br>to continue
+    </div>
+
+    <input id="pw-input" type="password"
+      placeholder="Password"
+      onkeydown="if(event.key==='Enter')checkPw()"
+      style="
+        width:100%; padding:13px 16px;
+        border:1px solid rgba(201,168,76,0.5);
+        border-radius:10px; background:rgba(255,255,255,0.08);
+        color:#FFFFFF; font-size:16px; text-align:center;
+        outline:none; margin-bottom:12px;
+        -webkit-appearance:none;
+      "
+    />
+
+    <div id="pw-error" style="
+      font-size:12px; color:#FF7777;
+      min-height:18px; margin-bottom:12px;
+    "></div>
+
+    <button onclick="checkPw()" style="
+      width:100%; padding:13px;
+      background:#C9A84C; color:#1F3864;
+      border:none; border-radius:10px;
+      font-size:15px; font-weight:700; cursor:pointer;
+      transition:background 0.15s; -webkit-appearance:none;
+    "
+    onmouseover="this.style.background='#F0D080'"
+    onmouseout="this.style.background='#C9A84C'"
+    >Unlock Access</button>
+
+    <div style="font-size:10px;color:#556677;margin-top:20px;">
+      Compatible with ChatGPT &amp; Claude (claude.ai)
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Password configuration ─────────────────────────────────────────────────
+  // Change the password below to anything you like
+  const ACCESS_PASSWORD = "Biren@2025";
+  const SESSION_KEY = "bs_ai_access";
+
+  function checkPw() {
+    const input = document.getElementById('pw-input').value.trim();
+    const err   = document.getElementById('pw-error');
+    if (input === ACCESS_PASSWORD) {
+      // Store in sessionStorage so user stays logged in for this tab session
+      sessionStorage.setItem(SESSION_KEY, "1");
+      document.getElementById('lock-screen').style.display = 'none';
+      err.textContent = '';
+    } else {
+      err.textContent = '❌  Incorrect password. Please try again.';
+      document.getElementById('pw-input').value = '';
+      document.getElementById('pw-input').focus();
+      // Shake animation
+      const box = document.getElementById('pw-input');
+      box.style.transition = 'transform 0.1s';
+      box.style.transform = 'translateX(8px)';
+      setTimeout(() => box.style.transform = 'translateX(-8px)', 100);
+      setTimeout(() => box.style.transform = 'translateX(0)', 200);
+    }
+  }
+
+  // Check if already authenticated this session
+  if (sessionStorage.getItem(SESSION_KEY) === "1") {
+    document.getElementById('lock-screen').style.display = 'none';
+  }
+</script>
+
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-bar"></div>
+      <div class="logo-text">
+        <h1>THE BIREN SHAH AI INVESTING SYSTEM</h1>
+        <p>Prompt Generator — Select a prompt, fill in details, copy and run</p>
+      </div>
+    </div>
+    <div class="compat">Compatible with<br><strong style="color:#C9A84C">ChatGPT • Claude (claude.ai)</strong></div>
+  </div>
+</header>
+
+<!-- Mobile tab bar -->
+<div class="tab-bar" id="tab-bar">
+  <button onclick="showTab('prompts')" id="tab-prompts" class="active">☰ Prompts</button>
+  <button onclick="showTab('main')" id="tab-main">📋 Output</button>
+</div>
+
+<div class="app-layout">
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="cat-label">🌅 Daily</div>
+    <button class="prompt-btn" onclick="select('morning')" id="btn-morning">
+      <span class="btn-dot" style="background:#1F3864"></span>
+      <div><div class="btn-title">Morning Terminal</div><div class="btn-sub">AI-IOS Daily Dashboard</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('daily')" id="btn-daily">
+      <span class="btn-dot" style="background:#1A4971"></span>
+      <div><div class="btn-title">Daily Market Brief</div><div class="btn-sub">Global markets summary</div></div>
+    </button>
+
+    <div class="cat-label">📊 Weekly</div>
+    <button class="prompt-btn" onclick="select('scanner')" id="btn-scanner">
+      <span class="btn-dot" style="background:#155B82"></span>
+      <div><div class="btn-title">Market Scanner</div><div class="btn-sub">Global macro analysis</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('sector')" id="btn-sector">
+      <span class="btn-dot" style="background:#0E6B96"></span>
+      <div><div class="btn-title">Sector Rotation</div><div class="btn-sub">Capital flow detection</div></div>
+    </button>
+
+    <div class="cat-label">🔍 Discovery</div>
+    <button class="prompt-btn" onclick="select('multibagger')" id="btn-multibagger">
+      <span class="btn-dot" style="background:#1D6A3A"></span>
+      <div><div class="btn-title">Multibagger Discovery</div><div class="btn-sub">Find 5x–10x companies</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('radar')" id="btn-radar">
+      <span class="btn-dot" style="background:#155B82"></span>
+      <div><div class="btn-title">Multibagger Radar</div><div class="btn-sub">Quick idea generation</div></div>
+    </button>
+
+    <div class="cat-label">🏦 Company Research</div>
+    <button class="prompt-btn" onclick="select('master')" id="btn-master">
+      <span class="btn-dot" style="background:#C9A84C"></span>
+      <div><div class="btn-title">AI Hedge Fund Master</div><div class="btn-sub">Complete analysis — 1 command</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('deepdive')" id="btn-deepdive">
+      <span class="btn-dot" style="background:#1D6A3A"></span>
+      <div><div class="btn-title">Hedge Fund Deep Dive</div><div class="btn-sub">Fundamental analysis</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('super')" id="btn-super">
+      <span class="btn-dot" style="background:#155B82"></span>
+      <div><div class="btn-title">AI Super Prompt</div><div class="btn-sub">Full research report</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('technical')" id="btn-technical">
+      <span class="btn-dot" style="background:#7B4F00"></span>
+      <div><div class="btn-title">Technical Analysis</div><div class="btn-sub">Entry point analysis</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('scuttlebutt')" id="btn-scuttlebutt">
+      <span class="btn-dot" style="background:#4A1A6B"></span>
+      <div><div class="btn-title">Scuttlebutt Deep Dive</div><div class="btn-sub">Qualitative moat analysis</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('sentiment')" id="btn-sentiment">
+      <span class="btn-dot" style="background:#4A1A6B"></span>
+      <div><div class="btn-title">Earnings Sentiment</div><div class="btn-sub">Management tone analyser</div></div>
+    </button>
+
+    <div class="cat-label">💼 Portfolio</div>
+    <button class="prompt-btn" onclick="select('portfolio')" id="btn-portfolio">
+      <span class="btn-dot" style="background:#7B4F00"></span>
+      <div><div class="btn-title">Portfolio Builder</div><div class="btn-sub">Construct allocation</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('risk')" id="btn-risk">
+      <span class="btn-dot" style="background:#6B1A1A"></span>
+      <div><div class="btn-title">Risk Analysis</div><div class="btn-sub">Identify all risks</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('command-center')" id="btn-command-center">
+      <span class="btn-dot" style="background:#1D6A3A"></span>
+      <div><div class="btn-title">Portfolio Command Center</div><div class="btn-sub">Full portfolio review</div></div>
+    </button>
+    <button class="prompt-btn" onclick="select('monthly')" id="btn-monthly">
+      <span class="btn-dot" style="background:#155B82"></span>
+      <div><div class="btn-title">Monthly Review</div><div class="btn-sub">Rebalancing & outlook</div></div>
+    </button>
+
+    <div class="cat-label">🇮🇳 India Specific</div>
+    <button class="prompt-btn" onclick="select('fii-dii')" id="btn-fii-dii">
+      <span class="btn-dot" style="background:#6B1A1A"></span>
+      <div><div class="btn-title">FII vs DII Tracker</div><div class="btn-sub">Who controls price action?</div></div>
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="main" id="main-panel">
+  <div class="main-inner">
+    <!-- Welcome state -->
+    <div class="welcome" id="welcome-panel">
+      <h2>Select a Prompt to Begin</h2>
+      <p>Choose any prompt from the left panel. Fill in the company or date details, then copy the generated prompt into ChatGPT or Claude.</p>
+      <div class="welcome-grid">
+        <div class="welcome-stat"><div class="num">15+</div><div class="lbl">Prompts</div></div>
+        <div class="welcome-stat"><div class="num">37</div><div class="lbl">Sections</div></div>
+        <div class="welcome-stat"><div class="num">10</div><div class="lbl">Workflow Steps</div></div>
+      </div>
+    </div>
+    <div id="prompt-panel" style="display:none">
+      <div class="prompt-card">
+        <div class="card-header">
+          <div>
+            <div class="card-title" id="card-title">Prompt Name</div>
+            <div class="card-sub" id="card-sub">Description</div>
+          </div>
+          <span class="freq-badge" id="freq-badge">Weekly</span>
+        </div>
+        <div class="inputs-section" id="inputs-section">
+          <div class="inputs-grid" id="inputs-grid"></div>
+        </div>
+        <div class="prompt-output-section">
+          <div class="output-header">
+            <span class="output-label">Generated Prompt — Ready to Copy</span>
+            <button class="copy-btn" id="copy-btn" onclick="copyPrompt()">
+              <span>📋</span> Copy Prompt
+            </button>
+          </div>
+          <div class="prompt-box" id="prompt-box"></div>
+        </div>
+      </div>
+      <div class="tips-card" id="tips-card">
+        <div class="tips-title">💡 Usage Tips</div>
+        <div id="tips-content"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- sidebar -->
+
+<script>
+const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+const DATA_RULES = `
+────────────────────────────────────────────────────────────
+DATA, SOURCES AND ASSUMPTIONS RULES
+  • Use only reputable public sources: company annual reports,
+    quarterly filings, exchange disclosures, investor presentations,
+    concall transcripts, and recognised financial databases.
+  • When citing figures (revenue, margins, ROCE/ROE, multiples),
+    state the period clearly (e.g. FY24, TTM, Q3 FY25).
+  • Label all approximations as [Estimate].
+  • If confidence is low due to limited data, state 'Low confidence'.
+  • Never fabricate precise FII/DII flow numbers or shareholder lists.
+  • Focus on long-term investment analysis, not short-term signals.
+────────────────────────────────────────────────────────────`;
+
+const PROMPTS = {
+  morning: {
+    title: "AI-IOS Morning Terminal",
+    sub: "Complete daily market intelligence dashboard",
+    freq: "Daily", freqColor: "#1F3864",
+    inputs: [
+      { id: "date", label: "Date", placeholder: today, hint: "Today's date" },
+    ],
+    tips: [
+      { icon: "⚠️", text: "Enable web search in ChatGPT or Claude before running for live data." },
+      { icon: "🕐", text: "Run this every morning before markets open — ideally 8:30–9:00 AM IST." },
+      { icon: "📌", text: "Save your output as a daily journal to track market evolution over time." },
+    ],
+    generate: (v) => `RUN AI-IOS — MORNING TERMINAL
+
+Date: ${v.date || today}
+
+Markets to Analyse:
+  • India (NSE / BSE)
+  • United States (NYSE / NASDAQ)
+  • Global Markets (Europe, Japan, other developed markets)
+
+Benchmarks:
+  • Nifty 50  •  S&P 500  •  Nasdaq 100  •  MSCI World Index
+
+Important:
+Use web search to retrieve the latest available market data.
+Label all figures as [Live Data] or [Estimate] if necessary.
+
+Role:
+You are a hedge fund macro strategist preparing a daily
+institutional market briefing before the trading session begins.
+${DATA_RULES}
+
+STEP 1 — Global Market Snapshot
+Summarise overnight market movements.
+Create table: Index | Last Price | Daily Change | Trend
+Cover: Nifty 50, S&P 500, Nasdaq 100, MSCI World.
+Provide a short global market sentiment summary.
+
+STEP 2 — Sector Leadership
+Create table: Sector | 1M Performance | 3M Performance | Momentum
+Identify: Top 3 strongest sectors, Top 3 weakest sectors.
+Explain briefly why capital may be rotating into these sectors.
+
+STEP 3 — Institutional Capital Flows
+For India: FII net flows, DII net flows.
+For global markets: ETF inflows, hedge fund positioning trends.
+Classify current institutional stance as:
+  Risk-On / Risk-Off / Neutral — with brief rationale.
+
+STEP 4 — Key Macro Drivers
+Summarise 3 major macro developments influencing markets today.
+(e.g. interest rates, inflation data, commodity prices,
+geopolitical developments, central bank policy)
+
+STEP 5 — High-Interest Stocks
+Identify 5 companies globally attracting attention due to:
+  • Strong momentum  •  Unusual volume
+  • Earnings news    •  Sector leadership
+Create table: Company | Country | Sector | Reason for Attention
+
+STEP 6 — Multibagger Radar Signals
+Identify 3–5 companies with strong:
+  • Revenue growth  •  Return on capital
+  • Structural industry tailwinds
+Provide a short explanation for each.
+
+STEP 7 — Risks to Monitor Today
+List 3 key risks investors should watch.
+(e.g. policy changes, earnings announcements, macro data releases)
+
+STEP 8 — Strategic Takeaways
+Provide:
+  • 3 key market insights
+  • 2 sectors worth researching
+  • 2 stocks worth deeper analysis
+
+Note: These are research starting points, not investment
+recommendations. Always conduct your own due diligence.`
+  },
+
+  daily: {
+    title: "Daily Hedge Fund Market Brief",
+    sub: "Global market, flows, and news summary",
+    freq: "Daily", freqColor: "#1A4971",
+    inputs: [
+      { id: "date", label: "Date", placeholder: today, hint: "Today's date" },
+    ],
+    tips: [
+      { icon: "⚠️", text: "Web search must be enabled for live market data." },
+      { icon: "📊", text: "Lighter than the Morning Terminal — use this for a quick 5-minute market check." },
+    ],
+    generate: (v) => `RUN DAILY HEDGE FUND MARKET BRIEF
+
+Date: ${v.date || today}
+Markets: India, United States, Global Markets (Europe, Japan, other developed markets)
+${DATA_RULES}
+
+STEP 1 — Global Market Summary
+Explain major market movements across key indices.
+
+STEP 2 — Institutional Flows
+  For India: FII / DII flows (SEBI classifications)
+  For US / Global: institutional ownership changes,
+    ETF flows, hedge fund positioning
+
+STEP 3 — Sector Performance
+Create table: Sector | Performance | Trend
+
+STEP 4 — Unusual Volume Stocks
+Identify top 5 stocks with unusual trading activity.
+
+STEP 5 — Key News
+Highlight important macro or company news.
+
+STEP 6 — Potential Trade Ideas for Further Research
+Provide two actionable ideas with rationale.
+(Note: These are research starting points, not guaranteed outcomes.
+Always conduct your own due diligence before trading.)`
+  },
+
+  scanner: {
+    title: "Global AI Market Scanner",
+    sub: "Analyse global markets, macro trends, and capital flows",
+    freq: "Weekly", freqColor: "#155B82",
+    inputs: [
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "⚠️", text: "Enable web search for live index and flow data." },
+      { icon: "📅", text: "Best run on Monday morning to set the week's macro context." },
+      { icon: "🔗", text: "Run this BEFORE the Sector Rotation Engine." },
+    ],
+    generate: (v) => `RUN GLOBAL AI MARKET SCANNER
+
+Reference Date: ${v.date || today}
+
+Markets to Scan:
+  • India (NSE / BSE)
+  • United States (NYSE / NASDAQ)
+  • Global Markets (Europe, Japan, other developed markets)
+
+Benchmarks:
+  • Nifty 50  •  S&P 500  •  Nasdaq 100  •  MSCI World Index
+
+Knowledge Cutoff Note:
+Please state whether the data in your response comes from your
+real-time web browsing tool or your internal training data.
+Label training-data outputs as [As of training data].
+
+Role:
+You are a global hedge fund macro strategist analysing equity markets.
+${DATA_RULES}
+
+STEP 1 — Global Market Regime
+Determine whether markets are currently in:
+  • Bull Market  •  Correction  •  Distribution Phase  •  Early Recovery
+Use: index trends, volatility indicators, macroeconomic data.
+
+STEP 2 — Sector Momentum
+Create table: Sector | 3M Performance | 6M Performance | Momentum Rating
+
+STEP 3 — Institutional Capital Flows
+  For India: FII / DII flows (SEBI classifications)
+  For US / Global: institutional ownership changes,
+    ETF flows, hedge fund positioning
+
+STEP 4 — Hidden Compounders (Financial Quality Filters)
+Identify companies with revenue growth > 15% and strong tailwinds.
+Apply sector-appropriate ROCE benchmarks:
+  • Asset-light (tech, FMCG, pharma): ROCE > 18%
+  • Capital-intensive (power, infra, manufacturing): ROCE > 10%
+  • Banks / NBFCs: ROE > 14% (use instead of ROCE)
+
+STEP 5 — Candidate Table
+Create table:
+  Company | Country | Ticker (Exchange) | Market Cap |
+  Growth Driver | Quality Score (1–10)
+
+STEP 6 — Quality Score Rationale
+For each company, provide a 1-sentence justification for the Quality Score.
+
+STEP 7 — Key Market Insights
+Provide: 5 major conclusions, 3 risks, 3 opportunities.`
+  },
+
+  sector: {
+    title: "Global Sector Rotation Engine",
+    sub: "Identify sectors gaining or losing institutional capital",
+    freq: "Weekly", freqColor: "#0E6B96",
+    inputs: [
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "⚠️", text: "Enable web search for live sector performance data." },
+      { icon: "🔗", text: "Run this AFTER the Market Scanner for full context." },
+      { icon: "💡", text: "Focus on sectors with both strong momentum AND institutional accumulation — that combination is powerful." },
+    ],
+    generate: (v) => `RUN GLOBAL SECTOR ROTATION ENGINE
+
+Reference Date: ${v.date || today}
+Markets to Analyse: India, United States, Global Markets (Europe, Japan, other developed markets)
+
+Role:
+You are a global macro equity strategist analysing sector rotation.
+${DATA_RULES}
+
+STEP 1 — Sector Performance
+Create table: Sector | 3M Return | 6M Return | Trend
+
+STEP 2 — Valuation Comparison
+Create table: Sector | Current P/E | Historical Avg P/E | Valuation Status
+
+STEP 3 — Institutional Allocation
+Analyse which sectors are seeing:
+  • Hedge fund accumulation
+  • ETF inflows
+  • Mutual fund overweight positions
+
+STEP 4 — Emerging Investment Themes
+Identify structural trends such as:
+  • Artificial intelligence  •  Semiconductor expansion
+  • Energy transition  •  Electrification  •  Defence spending
+
+STEP 5 — Investment Implications
+Provide: Top 5 sectors to overweight | Top 3 sectors to avoid`
+  },
+
+  multibagger: {
+    title: "Global Multibagger Discovery Engine",
+    sub: "Identify high-growth companies with 5x–10x potential",
+    freq: "Monthly", freqColor: "#1D6A3A",
+    inputs: [
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "📅", text: "Run monthly — usually at the start of each month." },
+      { icon: "🔍", text: "Focus particularly on companies with market cap below $5B globally / ₹40,000 Cr in India." },
+      { icon: "✅", text: "Use the 20-Point Checklist on any company this prompt surfaces before investing." },
+    ],
+    generate: (v) => `RUN GLOBAL MULTIBAGGER DISCOVERY ENGINE
+
+Reference Date: ${v.date || today}
+
+Role:
+You are a long-term growth investor. Drawing from your knowledge of
+global equity markets, identify companies that demonstrate the
+characteristics of potential multibagger stocks.
+
+Markets to Cover: India, United States, Global Markets (Europe, Japan, other developed markets)
+${DATA_RULES}
+
+STEP 1 — Industry Megatrends
+Identify industries with long structural growth runways.
+
+STEP 2 — Multibagger Candidates
+Create table:
+  Company | Country | Sector | Growth Driver | Multibagger Potential
+Identify at least 15 companies globally.
+
+STEP 3 — Hidden Compounders
+Focus on companies with market cap below:
+  • $5B globally  •  ₹40,000 Cr in India
+(Note: These thresholds reflect different market scales —
+ Indian and global limits are intentionally set separately.)
+
+STEP 4 — Financial Quality Filters
+Select companies meeting:
+  • Trailing 3-year average revenue growth > 15%
+    (label forward estimates as [Estimate])
+  • ROCE benchmarks (adjust by sector):
+    - Asset-light (tech, FMCG, pharma): ROCE > 18%
+    - Capital-intensive (power, infra, manufacturing): ROCE > 10%
+    - Banks / NBFCs: ROE > 14% (use instead of ROCE)
+  • Manageable debt levels
+
+STEP 5 — Conviction Ranking
+Rank top opportunities by probability of success.
+Explain key reasons for each ranking.`
+  },
+
+  radar: {
+    title: "Global Multibagger Radar",
+    sub: "Quick idea generation for emerging compounders",
+    freq: "Weekly", freqColor: "#155B82",
+    inputs: [
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "💡", text: "This is a fast idea generator — use the Discovery Engine for deeper screening of results." },
+      { icon: "🔍", text: "Hidden Gems step focuses on smaller, less-discovered companies." },
+    ],
+    generate: (v) => `RUN GLOBAL MULTIBAGGER RADAR
+
+Reference Date: ${v.date || today}
+
+Role:
+You are a long-term growth investor searching for early-stage
+compounders. Drawing from your knowledge of global equity markets,
+identify companies demonstrating multibagger characteristics.
+${DATA_RULES}
+
+STEP 1 — Structural Megatrends
+Identify industries with long structural growth runways.
+
+STEP 2 — Multibagger Candidates
+Create table: Company | Country | Sector | Growth Driver | Potential
+
+STEP 3 — Hidden Gems
+Identify companies with:
+  • Strong revenue growth  •  High ROCE  •  Scalable business model
+
+STEP 4 — Conviction Ranking
+Rank top opportunities and explain the reasoning for each.`
+  },
+
+  master: {
+    title: "AI Hedge Fund Master Prompt",
+    sub: "The single most powerful prompt — complete analysis in one command",
+    freq: "Per Stock", freqColor: "#C9A84C",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Tata Power", hint: "Full company name" },
+      { id: "ticker", label: "Ticker & Exchange", placeholder: "e.g. TATAPOWER:NSE", hint: "Format: TICKER:EXCHANGE" },
+      { id: "cmp", label: "Current Market Price", placeholder: "e.g. ₹420", hint: "CMP at time of analysis" },
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "⭐", text: "This is the most comprehensive prompt in the system — runs all 11 analytical sections in one command." },
+      { icon: "🎯", text: "Use Ticker:Exchange format (e.g. RELIANCE:NSE or NVDA:NASDAQ) to prevent market confusion." },
+      { icon: "🛡️", text: "AI will prefer HOLD over BUY if valuation upside is less than 20% — this is conservative by design." },
+    ],
+    generate: (v) => `RUN AI HEDGE FUND MASTER PROMPT
+
+Company Name:         ${v.company || "[Insert Company Name]"}
+Ticker & Exchange:    ${v.ticker || "[e.g. RELIANCE:NSE or NVDA:NASDAQ]"}
+Current Market Price: ${v.cmp || "[Insert CMP]"}
+Reference Date:       ${v.date || today}
+
+Role:
+You are a senior equity research analyst at a global hedge fund
+producing a full institutional-grade research report similar to
+work produced by Goldman Sachs, Morgan Stanley, or Tiger Global
+research desks.
+
+Use the latest publicly available information including:
+  • Company annual reports  •  Quarterly results
+  • Investor presentations  •  Concall transcripts
+  • Exchange filings        •  Institutional ownership data
+  • Credible financial databases
+
+Clearly label assumptions as [Estimate].
+Be conservative with assumptions and avoid optimistic bias.
+If valuation upside is less than 20%, prefer HOLD instead of BUY.
+${DATA_RULES}
+
+SECTION 1 — Executive Summary
+Provide: Investment thesis, Key positives, Key risks, Final recommendation.
+
+SECTION 2 — Business Overview
+Explain: Core products and services, Revenue segmentation,
+Geographic exposure, Major customers if known.
+
+SECTION 3 — Industry and Market Structure
+Analyse: Total addressable market, Industry growth drivers,
+Competitive landscape, Industry risks.
+
+SECTION 4 — Competitive Advantage (Economic Moat)
+Evaluate: Brand strength, Cost advantages, Switching costs,
+Network effects, Scale advantages, Regulatory barriers.
+Assess moat durability: Strong / Moderate / Weak
+
+SECTION 5 — Financial Performance (5–10 years where possible)
+Analyse: Revenue growth, Operating margins, ROE / ROCE,
+Free cash flow generation, Balance sheet strength.
+Create table: Year | Revenue | Operating Margin | ROE | FCF
+
+SECTION 6 — Valuation Analysis
+DCF Valuation:
+  • 5-year forecast period
+  • Sector-appropriate WACC (state assumed rate)
+  • Terminal growth rate 3–5%
+  • Show Terminal Value calculation step
+  • Label all assumptions as [Estimate]
+Relative Valuation:
+  • Peer comparison using P/E, EV/EBITDA, P/B
+  • Estimated fair value  •  Margin of safety
+
+SECTION 7 — Technical Structure
+Analyse: Long-term price trend, 50-day and 200-day moving averages,
+Support and resistance, RSI and momentum.
+Technical Bias: Bullish / Neutral / Bearish (label estimates)
+
+SECTION 8 — Institutional Ownership
+For Indian stocks: FII and DII ownership trends.
+For global stocks: Institutional ownership %, major hedge fund
+and ETF holders. Describe trends qualitatively if unavailable.
+(Note: FII/DII are India-specific SEBI classifications.)
+
+SECTION 9 — Risk Analysis
+Identify: Industry risks, Financial risks, Regulatory risks,
+Valuation risks, Disruption risks.
+
+SECTION 10 — Scenario Analysis
+Provide Bull / Base / Bear case with price range and reasoning.
+
+SECTION 11 — Investment Verdict
+Rating: Strong Buy / Buy / Hold / Avoid
+Also provide: Fair value estimate, expected upside/downside,
+investment horizon.`
+  },
+
+  deepdive: {
+    title: "Hedge Fund Stock Deep Dive",
+    sub: "Institutional-style fundamental analysis",
+    freq: "Per Stock", freqColor: "#1D6A3A",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Infosys", hint: "Full company name" },
+      { id: "ticker", label: "Ticker & Exchange", placeholder: "e.g. INFY:NSE", hint: "Format: TICKER:EXCHANGE" },
+    ],
+    tips: [
+      { icon: "🔗", text: "Use this before the AI Hedge Fund Master Prompt for a focused fundamental-only analysis." },
+      { icon: "📐", text: "The Terminal Value calculation step ensures DCF math is transparent and verifiable." },
+    ],
+    generate: (v) => `RUN HEDGE FUND STOCK DEEP DIVE
+
+Company:          ${v.company || "[Insert Company Name]"}
+Ticker & Exchange:${v.ticker || "[e.g. INFY:NSE or MSFT:NASDAQ]"}
+
+Role:
+You are a hedge fund analyst performing deep fundamental analysis.
+${DATA_RULES}
+
+STEP 1 — Business and Industry Moat
+Explain how the company generates revenue.
+Evaluate competitive advantages: Brand, Network Effects, Cost.
+
+STEP 2 — Financial Health (3–5 year trends)
+Analyse: Revenue growth, Operating margins, ROCE, Balance sheet strength.
+
+STEP 3 — Valuation (DCF)
+  • 5-year explicit forecast period
+  • Sector-appropriate WACC (state assumed rate clearly)
+  • Terminal growth rate 3–5%
+  • Show the Terminal Value calculation step to ensure
+    mathematical consistency
+  • Label all assumptions as [Estimate]
+  • Peer comparison (EV/EBITDA, P/E as appropriate)
+  • Fair value estimate
+
+STEP 4 — Scenario Analysis
+Provide Bull, Base, and Bear case price targets with rationale.
+
+STEP 5 — Investment Verdict
+Strong Buy / Buy / Hold / Avoid`
+  },
+
+  super: {
+    title: "Biren Shah AI Super Prompt",
+    sub: "Full report combining fundamentals, valuation, and technicals",
+    freq: "Per Stock", freqColor: "#155B82",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Asian Paints", hint: "Full company name" },
+      { id: "ticker", label: "Ticker & Exchange", placeholder: "e.g. ASIANPAINT:NSE", hint: "Format: TICKER:EXCHANGE" },
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "💡", text: "A balanced middle ground — more detailed than Deep Dive, lighter than Master Prompt." },
+      { icon: "⏱️", text: "Expect a comprehensive 10-section output — allow 2–3 minutes for AI to generate." },
+    ],
+    generate: (v) => `RUN BIREN SHAH AI SUPER PROMPT
+
+Company:              ${v.company || "[Insert Company Name]"}
+Ticker & Exchange:    ${v.ticker || "[e.g. HDFCBANK:NSE or GOOGL:NASDAQ]"}
+Reference Date:       ${v.date || today}
+
+Role:
+You are a senior equity research analyst at a top global investment bank.
+${DATA_RULES}
+
+STEP 1 — Executive Summary
+Provide: Key investment thesis, Key positives, Key risks, Overall recommendation.
+
+STEP 2 — Business Overview
+Explain: Products and services, Revenue segmentation, Geographic exposure.
+
+STEP 3 — Industry Analysis
+Analyse: Market size, Growth drivers, Competitive landscape.
+
+STEP 4 — Competitive Advantage
+Evaluate economic moat including:
+  • Brand strength  •  Cost advantages
+  • Switching costs  •  Network effects
+
+STEP 5 — Financial Analysis
+Analyse: Revenue growth, Profit margins, ROCE / ROE, Balance sheet strength.
+
+STEP 6 — Valuation
+  • DCF: 5-year forecast, Sector-appropriate WACC (state assumed rate),
+    Terminal growth rate 3–5%, Label all assumptions as [Estimate]
+  • Peer comparison  •  Fair value estimate
+
+STEP 7 — Technical Analysis
+Evaluate: Price trend, Support and resistance, Momentum indicators.
+Technical Bias: Bullish / Neutral / Bearish
+
+STEP 8 — Risk Analysis
+Identify major risks: Industry, Financial, Regulatory.
+
+STEP 9 — Bull / Base / Bear Case
+Provide scenario analysis.
+
+STEP 10 — Final Investment Verdict
+Strong Buy / Buy / Hold / Avoid`
+  },
+
+  technical: {
+    title: "Global Technical Analysis Engine",
+    sub: "Price trend, momentum, and entry point analysis",
+    freq: "Per Stock", freqColor: "#7B4F00",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Reliance Industries", hint: "Full company name" },
+      { id: "ticker", label: "Ticker & Exchange", placeholder: "e.g. RELIANCE:NSE", hint: "Format: TICKER:EXCHANGE" },
+      { id: "cmp", label: "Reference Price (CMP)", placeholder: "e.g. ₹2,850", hint: "Verify on TradingView/NSE first" },
+    ],
+    tips: [
+      { icon: "⚠️", text: "AI cannot guarantee live price data. ALWAYS verify RSI, MACD, and moving averages on TradingView, NSE, Yahoo Finance, or your broker before acting." },
+      { icon: "🎯", text: "This gives a Technical BIAS — Bullish/Neutral/Bearish. It is NOT a trading signal." },
+      { icon: "📊", text: "Enable web search for the AI to retrieve approximate current price data." },
+    ],
+    generate: (v) => `RUN GLOBAL TECHNICAL ANALYSIS ENGINE
+
+Company:          ${v.company || "[Insert Company Name]"}
+Ticker & Exchange:${v.ticker || "[e.g. RELIANCE:NSE or TSLA:NASDAQ]"}
+
+Reference Price:
+Please verify the Current Market Price (CMP) using your latest
+web search results before calculating any indicators.
+${v.cmp ? `Approximate CMP provided: ${v.cmp} — please verify and label accordingly.` : "CMP: [Verify on TradingView/NSE before running]"}
+Label all estimated indicator values as [Estimate].
+
+[ Optional — paste recent OHLCV price data here for precise indicators ]
+
+Role:
+You are a professional technical analyst. Where you do not have access
+to live price data, clearly label outputs as [Estimate] and recommend
+the investor verify figures on TradingView, NSE, Yahoo Finance,
+or their broker platform before making any investment decision.
+${DATA_RULES}
+
+STEP 1 — Trend Structure
+Analyse: 50-day and 200-day moving averages.
+Determine if price is above or below both averages.
+Identify the long-term trend direction.
+
+STEP 2 — Support and Resistance
+Create table: Level Type | Price | Significance
+
+STEP 3 — Momentum and Volume
+Evaluate: RSI and MACD (label estimated values as [Estimate]).
+Identify: Accumulation patterns, Unusual volume spikes.
+
+STEP 4 — Technical Bias
+State the overall technical bias: Bullish / Neutral / Bearish
+Note: AI cannot provide reliable trading signals. This is a
+directional bias based on price structure only — always verify
+on TradingView, NSE, or your broker before acting.
+Support your bias with: price action, moving average position,
+momentum readings.
+Include confidence level (Low / Medium / High) if working from limited data.`
+  },
+
+  scuttlebutt: {
+    title: "Philip Fisher Scuttlebutt Deep Dive",
+    sub: "Qualitative moat analysis — the 'why' behind the numbers",
+    freq: "Per Stock", freqColor: "#4A1A6B",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Asian Paints", hint: "Best for consumer/B2B brands" },
+      { id: "ticker", label: "Ticker & Exchange", placeholder: "e.g. ASIANPAINT:NSE", hint: "Format: TICKER:EXCHANGE" },
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "ℹ️", text: "AI synthesises publicly available information — news, reviews, analyst reports, filings. It cannot do primary field research (calling customers, visiting stores)." },
+      { icon: "💡", text: "Most powerful on consumer brands, B2B companies, and businesses where customer loyalty is the moat." },
+      { icon: "🔗", text: "Run this AFTER the Hedge Fund Deep Dive for a complete quantitative + qualitative picture." },
+    ],
+    generate: (v) => `RUN PHILIP FISHER SCUTTLEBUTT DEEP DIVE
+
+Company:          ${v.company || "[Insert Company Name]"}
+Ticker & Exchange:${v.ticker || "[e.g. ASIANPAINT:NSE or COST:NASDAQ]"}
+Reference Date:   ${v.date || today}
+
+Role:
+You are a portfolio manager following the investment philosophy of
+Philip Fisher's 'Scuttlebutt' method. Your goal is to uncover
+qualitative competitive advantages and moat characteristics that
+do not appear clearly in financial statements.
+Focus on qualitative intelligence — the 'why' behind the numbers.
+${DATA_RULES}
+
+STEP 1 — Customer Loyalty and Brand Strength
+Analyse:
+  • Why do customers choose this company over competitors?
+  • Is the company's product or service genuinely differentiated?
+  • Are customers increasing or reducing their dependence on this company?
+  • What would customers do if this company raised prices by 10–15%?
+
+STEP 2 — Supplier and Distribution Relationships
+Analyse:
+  • Does the company have preferred access to key suppliers or inputs?
+  • Are distribution relationships proprietary or replicable?
+  • Could a well-funded competitor quickly build similar distribution?
+
+STEP 3 — Employee and Culture Quality
+Analyse:
+  • Is the company known as a desirable employer in its industry?
+  • Does management promote from within or rely on external hires?
+  • Are key people leaving or staying? Any notable management exits?
+
+STEP 4 — Competitive Moat Assessment
+Evaluate the depth and durability of competitive advantages:
+  • Brand moat (pricing power, customer loyalty)
+  • Network effect moat (value grows with more users)
+  • Cost moat (structural cost advantage over competitors)
+  • Switching cost moat (high cost for customers to leave)
+  • Regulatory / licence moat (barriers that protect the business)
+
+STEP 5 — Management Vision and Integrity
+Assess beyond quarterly results:
+  • Has management consistently delivered on long-term promises?
+  • Does management communicate clearly about failures, not just wins?
+  • Are capital allocation decisions aligned with shareholder interests?
+
+STEP 6 — Scuttlebutt Verdict
+Rate the company's qualitative moat: Strong / Moderate / Weak.
+Provide a 3-sentence summary of the key qualitative finding.
+Would Philip Fisher likely invest in this company? Why or why not?`
+  },
+
+  sentiment: {
+    title: "Earnings Call Sentiment Analyser",
+    sub: "Detect management tone shifts across last 3 earnings calls",
+    freq: "Per Stock", freqColor: "#4A1A6B",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Bajaj Finance", hint: "Company with public transcripts" },
+      { id: "ticker", label: "Ticker & Exchange", placeholder: "e.g. BAJFINANCE:NSE", hint: "Format: TICKER:EXCHANGE" },
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "ℹ️", text: "Transcripts must be publicly available. Premium platforms (Bloomberg, FactSet) are paywalled. Use: company IR website, NSE/BSE filings, Screener.in (India), or Seeking Alpha." },
+      { icon: "🎯", text: "Watch for: cautious language around debt/capex, dropping growth targets, hedging words like 'challenging' or 'selective'." },
+      { icon: "⚠️", text: "Enable web search so the AI can access publicly available transcripts." },
+    ],
+    generate: (v) => `RUN EARNINGS CALL SENTIMENT ANALYSER
+
+Company:          ${v.company || "[Insert Company Name]"}
+Ticker & Exchange:${v.ticker || "[e.g. BAJFINANCE:NSE or JPM:NYSE]"}
+Reference Date:   ${v.date || today}
+
+Role:
+You are a senior equity analyst specialising in qualitative research.
+Scan the last three earnings call transcripts for this company and
+analyse shifts in management tone, language, and emphasis.
+${DATA_RULES}
+
+STEP 1 — Debt and Capital Expenditure Language
+Identify how management describes debt levels and capex plans
+across the last three calls. Look for:
+  • Language becoming more cautious or defensive
+  • Changes in capex guidance (expansion vs. conserving cash)
+  • Shifts in how debt covenants or leverage are discussed
+
+STEP 2 — Revenue and Growth Outlook Tone
+Compare management's growth language across the three calls:
+  • Are growth targets becoming more or less ambitious?
+  • Is management hedging more with words like 'challenging',
+    'uncertain', or 'selective'?
+  • Are new growth drivers being introduced or old ones quietly dropped?
+
+STEP 3 — Analyst Question Patterns
+Identify recurring themes in questions asked by analysts:
+  • Are analysts repeatedly probing the same concern?
+  • Is management deflecting or providing clear answers?
+
+STEP 4 — Management Confidence Score
+Rate management confidence on a scale of 1–10 for each call.
+Create table: Quarter | Confidence Score | Key Tone Shift | Reason
+
+STEP 5 — Overall Sentiment Verdict
+Is management tone improving, stable, or deteriorating?
+What does this suggest about near-term business performance?
+
+Important: Label all outputs as [From transcript] or [Estimate]
+depending on whether data comes from actual transcripts or inference.`
+  },
+
+  portfolio: {
+    title: "Global Portfolio Builder",
+    sub: "Construct a diversified institutional-style portfolio",
+    freq: "Portfolio", freqColor: "#7B4F00",
+    inputs: [
+      { id: "horizon", label: "Investment Horizon", placeholder: "e.g. 5 years", hint: "How long you plan to hold" },
+      { id: "risk", label: "Risk Tolerance", placeholder: "Moderate", hint: "Conservative / Moderate / Aggressive" },
+      { id: "geo", label: "Geographic Split", placeholder: "India 60% | US 30% | Other 10%", hint: "Optional — leave blank for default" },
+    ],
+    tips: [
+      { icon: "📊", text: "Default framework: 40% Core Compounders, 30% Structural Growth, 20% Emerging Multibaggers, 10% Cyclical." },
+      { icon: "⚠️", text: "No single sector should exceed 25% of total allocation." },
+      { icon: "🌍", text: "Include India, US, and Global exposure for true diversification." },
+    ],
+    generate: (v) => `RUN GLOBAL PORTFOLIO BUILDER
+
+Investment Horizon: ${v.horizon || "[Insert Years]"}
+Risk Tolerance: ${v.risk || "Conservative / Moderate / Aggressive"}
+Preferred Geographic Split: ${v.geo || "India ___% | US ___% | Other ___%"}
+
+Role:
+You are a professional portfolio manager.
+${DATA_RULES}
+
+STEP 1 — Portfolio Allocation
+Suggest an allocation framework based on the investor's inputs above.
+Default framework if not specified:
+  40% Core Compounders
+  30% Structural Growth
+  20% Emerging Multibaggers
+  10% Cyclical Opportunities
+
+STEP 2 — Stock Selection
+Create table: Company | Country | Sector | Allocation % | Reason
+
+STEP 3 — Sector Diversification
+Ensure no single sector exceeds 25% of total allocation.
+
+STEP 4 — Geographic Diversification
+Allocate across India, United States, and Global Markets
+based on the investor's preferred geographic split above.
+
+STEP 5 — Portfolio Insights
+Explain the overall strategy and rationale.`
+  },
+
+  risk: {
+    title: "Global Risk Analysis Engine",
+    sub: "Identify all risks before committing capital",
+    freq: "Per Stock", freqColor: "#6B1A1A",
+    inputs: [
+      { id: "company", label: "Company Name", placeholder: "e.g. Tata Power", hint: "Company to analyse" },
+    ],
+    tips: [
+      { icon: "🛡️", text: "Always run this BEFORE finalising a position size." },
+      { icon: "💡", text: "Focus on the Downside Scenario — if the thesis fails, can you live with that loss?" },
+    ],
+    generate: (v) => `RUN GLOBAL RISK ANALYSIS ENGINE
+
+Company: ${v.company || "[Insert Company Name]"}
+
+Role:
+You are a hedge fund risk manager.
+${DATA_RULES}
+
+STEP 1 — Business Risks
+Analyse operational and execution risks.
+
+STEP 2 — Industry Risks
+Evaluate: Competition, Demand cycles, Technological disruption.
+
+STEP 3 — Financial Risks
+Evaluate: Leverage, Liquidity, Cash flow stability.
+
+STEP 4 — Regulatory Risks
+Analyse policy or legal risks.
+
+STEP 5 — Valuation Risks
+Determine whether current valuation is stretched relative to
+fundamentals and peers.
+
+STEP 6 — Downside Scenario
+Estimate potential downside if the investment thesis fails.`
+  },
+
+  'command-center': {
+    title: "AI Portfolio Command Center",
+    sub: "Full portfolio health check — strength, risks, rebalancing",
+    freq: "Portfolio", freqColor: "#1D6A3A",
+    inputs: [
+      { id: "holdings", label: "Portfolio Holdings", placeholder: "e.g. RELIANCE:NSE|Energy|15%, INFY:NSE|IT|12%", hint: "Format: Ticker | Sector | Weight%" },
+      { id: "value", label: "Portfolio Value", placeholder: "e.g. ₹25 lakhs", hint: "Total current value" },
+      { id: "horizon", label: "Investment Horizon", placeholder: "Long term", hint: "Short / Long term" },
+      { id: "risk", label: "Risk Tolerance", placeholder: "Moderate", hint: "Conservative / Moderate / Aggressive" },
+    ],
+    tips: [
+      { icon: "🔍", text: "Correlation Check: The AI will flag if multiple holdings are sensitive to the same macro factor (USD/INR, oil prices, interest rates)." },
+      { icon: "⚠️", text: "Weakest Link analysis finds the holding with the lowest quality-to-valuation ratio." },
+      { icon: "📅", text: "Run this monthly alongside the Monthly Portfolio Review." },
+    ],
+    generate: (v) => `RUN AI PORTFOLIO COMMAND CENTER
+
+Portfolio Holdings:
+  [List stocks in this format: Ticker (Exchange) | Sector | Weight %]
+  ${v.holdings || "Example: RELIANCE:NSE | Energy | 12%\n           TSLA:NASDAQ  | Automotive | 8%"}
+
+Portfolio Value:     ${v.value || "[Insert total value]"}
+Investment Horizon:  ${v.horizon || "Short term / Long term"}
+Risk Tolerance:      ${v.risk || "Conservative / Moderate / Aggressive"}
+${DATA_RULES}
+
+STEP 1 — Portfolio Overview
+Provide: Number of holdings, Sector distribution,
+Geographic exposure, Portfolio concentration.
+
+STEP 2 — Quality Assessment
+Evaluate each company based on: Business quality, Growth prospects,
+Financial strength, Competitive advantage.
+Create table:
+  Company | Quality Score (1–10) | Business Moat | Rationale
+Note: Score each company on a scale of 1–10 (10 = highest quality).
+Provide a 1-sentence rationale for each score assigned.
+
+STEP 3 — Correlation and Concentration Check
+  • Identify if any single sector exceeds 25% of total allocation.
+  • Check if multiple holdings are sensitive to the same macro factor
+    (e.g. interest rates, USD/INR, oil prices, government policy).
+  • Flag any hidden concentration risks across seemingly different sectors.
+
+STEP 4 — Risk Analysis
+Evaluate: Company-specific risks, Sector risks,
+Macroeconomic risks, Valuation risks.
+
+STEP 5 — Weakest Link
+Identify the holding with the lowest quality-to-valuation ratio.
+Explain why it is the weakest and suggest a higher-quality alternative.
+
+STEP 6 — Portfolio Improvement Suggestions
+Suggest: Potential replacements, Better quality alternatives,
+Opportunities to rebalance.
+
+STEP 7 — Final Portfolio Verdict
+Provide: Overall portfolio strength rating (1–10),
+Major strengths, Major weaknesses, Recommended actions.`
+  },
+
+  monthly: {
+    title: "Monthly AI Portfolio Review",
+    sub: "Performance, rebalancing, and strategic outlook",
+    freq: "Monthly", freqColor: "#155B82",
+    inputs: [
+      { id: "holdings", label: "Portfolio Holdings", placeholder: "List your stocks", hint: "One per line or comma-separated" },
+    ],
+    tips: [
+      { icon: "📅", text: "Run this at the start of each month to maintain portfolio discipline." },
+      { icon: "🔗", text: "Combine with the Portfolio Command Center for a full monthly review session." },
+    ],
+    generate: (v) => `RUN MONTHLY AI PORTFOLIO REVIEW
+
+Portfolio Holdings: ${v.holdings || "[List Your Stocks]"}
+${DATA_RULES}
+
+STEP 1 — Portfolio Performance
+Analyse overall portfolio performance and key movers.
+
+STEP 2 — Sector Allocation
+Evaluate current sector exposure vs. target allocation.
+
+STEP 3 — Risk Exposure
+Identify concentration risks and over-weighted positions.
+
+STEP 4 — Rebalancing Suggestions
+Suggest specific adjustments and rationale.
+
+STEP 5 — Updated Investment Outlook
+Provide strategic recommendations for the month ahead.`
+  },
+
+  'fii-dii': {
+    title: "FII vs DII Dynamic Flow Tracker",
+    sub: "India-specific — who controls price action?",
+    freq: "India", freqColor: "#6B1A1A",
+    inputs: [
+      { id: "ticker", label: "Ticker or Index", placeholder: "e.g. NIFTY50:NSE or RELIANCE:NSE", hint: "India-listed securities only" },
+      { id: "date", label: "Reference Date", placeholder: today, hint: "Date of analysis" },
+    ],
+    tips: [
+      { icon: "🇮🇳", text: "India-specific only — FII and DII are SEBI-regulated categories. For US/global stocks, use institutional ownership data instead." },
+      { icon: "⚠️", text: "Enable web search for live daily flow data from NSE/BSE." },
+      { icon: "💡", text: "FII selling + DII buying = domestic support. FII buying + DII selling = foreign-led rally. The difference matters." },
+    ],
+    generate: (v) => `RUN FII vs DII DYNAMIC FLOW TRACKER
+
+Ticker & Exchange: ${v.ticker || "[e.g. NIFTY50:NSE or RELIANCE:NSE]"}
+Reference Date:    ${v.date || today}
+Analysis Period:   Last 1 month (daily flow data)
+
+Note: This prompt is designed for Indian-listed securities.
+FII and DII are SEBI-specific classifications.
+For US or global stocks, use institutional ownership flow data instead.
+
+Role:
+You are an Indian equity market flow analyst. Analyse the 1-month
+trend of FII vs DII flows for the specified ticker or index.
+${DATA_RULES}
+
+STEP 1 — Net Flow Summary
+Create table:
+  Period | FII Net Flow (₹ Cr) | DII Net Flow (₹ Cr) | Net Balance
+Show: Last 5 trading sessions, Last 2 weeks, Last 1 month.
+
+STEP 2 — Flow Trend Direction
+Determine:
+  • Is FII flow accelerating positive or negative?
+  • Is DII flow acting as a counterbalance or moving in same direction?
+  • At what price levels did the largest net flows occur?
+
+STEP 3 — Price Action Correlation
+Analyse whether stock / index price moved in direction of FII or DII:
+  • Which institution appears to be controlling price action?
+  • Are FIIs selling into DII-supported rallies (distribution)?
+  • Are DIIs buying FII-driven dips (accumulation)?
+
+STEP 4 — Sector-Level Flow Context
+Which sectors are seeing the largest FII inflows / outflows?
+Which sectors are DIIs overweighting vs. FIIs?
+
+STEP 5 — Flow Verdict
+Based on 1-month flow data:
+  • Who is currently 'in control' — FII or DII?
+  • What does this suggest for near-term price direction?
+  • What trigger could reverse current flow direction?
+
+Label all data as [Live data] or [As of training data] accordingly.`
+  },
+};
+
+// ── App state ──────────────────────────────────────────────────────────────────
+let currentKey = null;
+let inputValues = {};
+
+function select(key) {
+  // Deactivate previous
+  if (currentKey) document.getElementById('btn-' + currentKey)?.classList.remove('active');
+
+  currentKey = key;
+  document.getElementById('btn-' + key)?.classList.add('active');
+  document.getElementById('welcome-panel').style.display = 'none';
+  document.getElementById('prompt-panel').style.display = 'block';
+
+  const p = PROMPTS[key];
+  document.getElementById('card-title').textContent = p.title;
+  document.getElementById('card-sub').textContent = p.sub;
+
+  const badge = document.getElementById('freq-badge');
+  badge.textContent = p.freq;
+  badge.style.background = p.freqColor;
+  badge.style.color = '#FFFFFF';
+
+  // Build inputs
+  inputValues = {};
+  const grid = document.getElementById('inputs-grid');
+  grid.innerHTML = '';
+  (p.inputs || []).forEach(inp => {
+    const div = document.createElement('div');
+    div.className = 'input-group';
+    div.innerHTML = `<label>${inp.label}</label>
+      <input type="text" id="inp-${inp.id}" placeholder="${inp.placeholder}" oninput="updateInput('${inp.id}', this.value)" />
+      ${inp.hint ? `<div class="input-hint">${inp.hint}</div>` : ''}`;
+    grid.appendChild(div);
+  });
+
+  // Build tips
+  const tipsContent = document.getElementById('tips-content');
+  tipsContent.innerHTML = (p.tips || []).map(t =>
+    `<div class="tip"><span class="tip-icon">${t.icon}</span><span>${t.text}</span></div>`
+  ).join('');
+
+  renderPrompt();
+}
+
+function updateInput(id, val) {
+  inputValues[id] = val;
+  renderPrompt();
+}
+
+function renderPrompt() {
+  if (!currentKey) return;
+  const p = PROMPTS[currentKey];
+  const raw = p.generate(inputValues);
+
+  // Syntax highlight
+  let html = raw
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^(RUN [A-Z\-— ]+)/gm, '<span class="run-cmd">$1</span>')
+    .replace(/^(STEP \d+|SECTION \d+) —/gm, '<span class="step">$1 —</span>')
+    .replace(/^(DATA, SOURCES AND ASSUMPTIONS RULES)/gm, '<span class="rule">$1</span>')
+    .replace(/\[Estimate\]/g, '<span style="color:#FFAA66">[Estimate]</span>')
+    .replace(/\[Live Data\]/g, '<span style="color:#66FFAA">[Live Data]</span>')
+    .replace(/\[From transcript\]/g, '<span style="color:#66FFAA">[From transcript]</span>');
+
+  document.getElementById('prompt-box').innerHTML = html;
+  document.getElementById('copy-btn').textContent = '📋  Copy Prompt';
+  document.getElementById('copy-btn').className = 'copy-btn';
+}
+
+function copyPrompt() {
+  if (!currentKey) return;
+  const raw = PROMPTS[currentKey].generate(inputValues);
+  navigator.clipboard.writeText(raw).then(() => {
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = '✅  Copied!';
+    btn.className = 'copy-btn copied';
+    setTimeout(() => {
+      btn.textContent = '📋  Copy Prompt';
+      btn.className = 'copy-btn';
+    }, 2000);
+  });
+}
+
+// ── Mobile tab switching ──────────────────────────────────────────────────────
+function showTab(tab) {
+  const sidebar = document.getElementById('sidebar');
+  const mainPanel = document.getElementById('main-panel');
+  document.getElementById('tab-prompts').classList.toggle('active', tab === 'prompts');
+  document.getElementById('tab-main').classList.toggle('active', tab === 'main');
+  if (window.innerWidth <= 768) {
+    sidebar.classList.toggle('mobile-active', tab === 'prompts');
+  }
+}
+
+// Auto-switch to output tab on mobile when a prompt is selected
+const _origSelect = select;
+window.select = function(key) {
+  _origSelect(key);
+  if (window.innerWidth <= 768) {
+    setTimeout(() => showTab('main'), 50);
+  }
+};
+
+// Scroll to top of output on mobile after render
+const _origRender = renderPrompt;
+window.renderPrompt = function() {
+  _origRender();
+  if (window.innerWidth <= 768) {
+    const box = document.getElementById('prompt-box');
+    if (box) box.scrollTop = 0;
+  }
+};
+
+// Better clipboard for iOS Safari
+async function copyPrompt() {
+  if (!currentKey) return;
+  const raw = PROMPTS[currentKey].generate(inputValues);
+  const btn = document.getElementById('copy-btn');
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(raw);
+    } else {
+      // iOS fallback
+      const ta = document.createElement('textarea');
+      ta.value = raw;
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    btn.textContent = '✅  Copied!';
+    btn.className = 'copy-btn copied';
+    setTimeout(() => { btn.textContent = '📋  Copy Prompt'; btn.className = 'copy-btn'; }, 2500);
+  } catch(e) {
+    btn.textContent = '⚠️  Long-press to copy';
+    setTimeout(() => { btn.textContent = '📋  Copy Prompt'; btn.className = 'copy-btn'; }, 3000);
+  }
+}
+
+</script>
+</body>
+</html>
